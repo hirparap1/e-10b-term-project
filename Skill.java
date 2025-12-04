@@ -3,6 +3,7 @@ public class Skill {
     private final int level;
     private final int experience;
     private final int rank;
+    private final int virtualLevel;
 
     public Skill() {
         this(SkillName.OVERALL, 32, 1154, 1);
@@ -13,47 +14,67 @@ public class Skill {
         this.level = level;
         this.experience = experience;
         this.rank = rank;
+        this.virtualLevel = calculateVirtualLevel();
+    }
+
+    public SkillName getName() {
+        return this.name;
+    }
+
+    public int getLevel() {
+        return this.level;
+    }
+
+    public int getExperience() {
+        return this.experience;
+    }
+
+    public int getRank() {
+        return this.rank;
+    }
+
+    public int getVirtualLevel() {
+        return this.virtualLevel;
     }
 
     @Override
     public String toString() {
-        int virtualLevel = getVirtualLevel();
         String levelDisplay;
 
-        if (virtualLevel > 99 && this.name != SkillName.OVERALL) {
-            levelDisplay = this.level + " (" + virtualLevel + ")";
+        if (this.level == 99 && this.name != SkillName.OVERALL) {
+            levelDisplay = this.level + " (" + this.virtualLevel + ")";
         } else {
             levelDisplay = String.valueOf(this.level);
         }
 
         String formattedString = String.format(
-                "%-16s%-10s%-16d%d",
+                "%-16s%-12d%-12s%-16d",
                 this.name,
+                this.rank,
                 levelDisplay,
-                this.experience,
-                this.rank);
+                this.experience);
 
         return formattedString;
     }
 
-    public int getVirtualLevel() {
+    private int calculateVirtualLevel() {
         // If level is below 99, just return the actual level
         if (this.level < 99) {
             return this.level;
         }
 
         // For level 99+, calculate virtual level
-        int virtualLevel = 99;
+        int currentLevel = 99;
 
-        while (virtualLevel <= 126) {
-            int expForNextLevel = getExperienceForLevel(virtualLevel + 1);
+        while (currentLevel <= 126) {
+            int expForNextLevel = getExperienceForLevel(currentLevel + 1);
             if (this.experience < expForNextLevel) {
                 break;
             }
-            virtualLevel++;
+            currentLevel++;
         }
 
-        return virtualLevel;
+        return currentLevel;
     }
 
     private int getExperienceForLevel(int targetLevel) {
