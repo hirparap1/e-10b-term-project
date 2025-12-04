@@ -1,5 +1,5 @@
 abstract class Goal {
-    
+
 }
 
 class ExperienceGoal extends Goal {
