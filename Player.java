@@ -22,6 +22,19 @@ public class Player {
         this.initializeGoals();
     }
 
+    // Initialize all goals to level 99
+    private void initializeGoals() {
+        try {
+            for (Skill s : skills) {
+                if (!s.isOverall()) {
+                    this.goals.put(s.getName(), new LevelGoal());
+                }
+            }
+        } catch (InvalidGoalException e) {
+            // This should never happen since we are using the 0-arg constructor
+        }
+    }
+
     public ArrayList<Skill> getSkills() {
         return this.skills;
     }
@@ -94,17 +107,6 @@ public class Player {
 
         reader.close();
         conn.disconnect();
-    }
-
-    // Initialize all goals to level 99
-    private void initializeGoals() {
-        try {
-            for (Skill s : skills) {
-                this.goals.put(s.getName(), new LevelGoal());
-            }
-        } catch (InvalidGoalException e) {
-            // This should never happen since we are using the 0-arg constructor
-        }
     }
 
     private HttpURLConnection establishConnection() throws Exception {

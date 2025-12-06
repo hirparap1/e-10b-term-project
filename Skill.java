@@ -37,8 +37,12 @@ public class Skill {
         return this.virtualLevel;
     }
 
+    public boolean isOverall() {
+        return this.name == SkillName.OVERALL;
+    }
+
     public String formattedLevelString() {
-        if (this.level == 99 && this.name != SkillName.OVERALL) {
+        if (this.level == 99 && !isOverall()) {
             return this.level + " (" + getVirtualLevel() + ")";
         } else {
             return String.valueOf(this.level);
