@@ -37,24 +37,12 @@ public class Skill {
         return this.virtualLevel;
     }
 
-    @Override
-    public String toString() {
-        String levelDisplay;
-
+    public String formattedLevelString() {
         if (this.level == 99 && this.name != SkillName.OVERALL) {
-            levelDisplay = this.level + " (" + this.virtualLevel + ")";
+            return this.level + " (" + getVirtualLevel() + ")";
         } else {
-            levelDisplay = String.valueOf(this.level);
+            return String.valueOf(this.level);
         }
-
-        String formattedString = String.format(
-                "%-16s%-12d%-12s%-16d",
-                this.name,
-                this.rank,
-                levelDisplay,
-                this.experience);
-
-        return formattedString;
     }
 
     private int calculateVirtualLevel() {

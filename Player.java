@@ -7,7 +7,7 @@ public class Player {
     private static final String HISCORE_URL = "https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=%s";
 
     private final String username;
-    private final LocalDateTime createdAt;
+    private LocalDateTime lastRefreshedAt;
     private final HashMap<SkillName, Goal> goals = new HashMap<>();
     private final HashMap<SkillName, Integer> experienceRates = new HashMap<>();
     private ArrayList<Skill> skills;
@@ -18,36 +18,59 @@ public class Player {
 
     public Player(String username) throws Exception {
         this.username = username;
-        this.createdAt = LocalDateTime.now();
-        fetchSkills();
+        this.refreshSkills();
+        this.initializeGoals();
     }
 
-    @Override
-    public String toString() {
-        String headers = String.format(
-                "%-16s%-12s%-12s%-16s%s\n", "Skill", "Rank", "Level", "Experience", "XP Rate");
+    public ArrayList<Skill> getSkills() {
+        return this.skills;
+    }
 
-        StringBuilder result = new StringBuilder();
-        result.append("Username: ").append(this.username).append("\n");
-        result.append("Created At: ").append(this.createdAt).append("\n");
-        result.append(headers);
-        for (Skill s : this.skills) {
-            int xpRate = experienceRates.getOrDefault(s.getName(), 0);
-            result.append(s.toString()).append(Integer.toString(xpRate)).append("\n");
+    public Skill getSkill(SkillName skillName) {
+        return this.skills.get(skillName.ordinal());
+    }
+
+    public LocalDateTime getLastRefreshedAt() {
+        return this.lastRefreshedAt;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public int getProgressToGoal(SkillName skillName) {
+        Goal goal = this.goals.get(skillName);
+        Skill skill = getSkill(skillName);
+
+        int currentExp = skill.getExperience();
+        int targetExp = goal.getTargetExperience();
+
+        int progress = (int) ((currentExp * 100.0) / targetExp);
+
+        return Math.min(progress, 100);
+    }
+
+    public void updateGoal(SkillName skillName, boolean isLevel, int target) throws InvalidGoalException {
+        Goal newGoal;
+        if (isLevel) {
+            newGoal = new LevelGoal(target);
+        } else {
+            newGoal = new ExperienceGoal(target);
         }
 
-        return result.toString();
+        this.goals.put(skillName, newGoal);
     }
 
-    public void updateExperienceRate(SkillName skill, int rate) throws InvalidExperienceRate {
+    public void updateExperienceRate(SkillName skillName, int rate) throws InvalidExperienceRateException {
         if (rate < 0) {
-            throw new InvalidExperienceRate();
+            throw new InvalidExperienceRateException();
         }
 
-        this.experienceRates.put(skill, rate);
+        this.experienceRates.put(skillName, rate);
     }
 
-    private void fetchSkills() throws Exception {
+    public final void refreshSkills() throws Exception {
+        this.lastRefreshedAt = LocalDateTime.now();
         this.skills = new ArrayList<>();
 
         HttpURLConnection conn = establishConnection();
@@ -71,6 +94,17 @@ public class Player {
 
         reader.close();
         conn.disconnect();
+    }
+
+    // Initialize all goals to level 99
+    private void initializeGoals() {
+        try {
+            for (Skill s : skills) {
+                this.goals.put(s.getName(), new LevelGoal());
+            }
+        } catch (InvalidGoalException e) {
+            // This should never happen since we are using the 0-arg constructor
+        }
     }
 
     private HttpURLConnection establishConnection() throws Exception {
