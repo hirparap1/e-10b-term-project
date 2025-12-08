@@ -43,6 +43,10 @@ public class Player {
         return this.skills.get(skillName.ordinal());
     }
 
+    public Goal getGoal(SkillName skillName) {
+        return this.goals.get(skillName);
+    }
+
     public LocalDateTime getLastRefreshedAt() {
         return this.lastRefreshedAt;
     }

@@ -31,7 +31,7 @@ public class ExperienceTrackerGUI extends JFrame {
         this.usernameField = new JTextField(15);
         this.loadButton = new JButton("Load Player");
         this.refreshButton = new JButton("Refresh Skills");
-        this.refreshButton.setEnabled(false); // Disabled until a player is loaded
+        this.refreshButton.setEnabled(false);
     }
 
     private void initializePlayerInfoLabel() {
@@ -120,7 +120,6 @@ public class ExperienceTrackerGUI extends JFrame {
             return;
         }
 
-        // Clear existing data
         this.skillsPanel.removeAll();
         this.skillsPanel.revalidate();
         this.skillsPanel.repaint();
@@ -128,7 +127,7 @@ public class ExperienceTrackerGUI extends JFrame {
         try {
             this.currentPlayer = new Player(username);
             displayCurrentPlayer();
-            this.refreshButton.setEnabled(true); // Enable refresh button after successful load
+            this.refreshButton.setEnabled(true);
         } catch (PlayerNotFoundException e) {
             JOptionPane.showMessageDialog(this,
                     "Player not found: " + username,
@@ -177,20 +176,28 @@ public class ExperienceTrackerGUI extends JFrame {
         gbc.gridy = 0;
 
         gbc.gridx = 0;
-        gbc.weightx = 0.2;
+        gbc.weightx = 0.15;
         addHeaderLabel("Skill", gbc);
 
         gbc.gridx = 1;
-        gbc.weightx = 0.2;
+        gbc.weightx = 0.15;
         addHeaderLabel("Rank", gbc);
 
         gbc.gridx = 2;
-        gbc.weightx = 0.2;
+        gbc.weightx = 0.15;
         addHeaderLabel("Level", gbc);
 
         gbc.gridx = 3;
-        gbc.weightx = 0.4;
+        gbc.weightx = 0.15;
         addHeaderLabel("Experience", gbc);
+
+        gbc.gridx = 4;
+        gbc.weightx = 0.15;
+        addHeaderLabel("Goal", gbc);
+
+        gbc.gridx = 5;
+        gbc.weightx = 0.25;
+        addHeaderLabel("Progress", gbc);
     }
 
     private void addSkillRows(ArrayList<Skill> skills, GridBagConstraints gbc) {
@@ -205,12 +212,14 @@ public class ExperienceTrackerGUI extends JFrame {
             addRankCell(skill, gbc);
             addLevelCell(skill, gbc);
             addExperienceCell(skill, gbc);
+            addGoalCell(skill, gbc);
+            addProgressCell(skill, gbc);
         }
     }
 
     private void addSkillNameCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 0;
-        gbc.weightx = 0.2;
+        gbc.weightx = 0.15;
         JLabel nameLabel = new JLabel(skill.getName().toString());
         nameLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
         nameLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
@@ -219,7 +228,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addRankCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 1;
-        gbc.weightx = 0.2;
+        gbc.weightx = 0.15;
         JLabel rankLabel = new JLabel(formatNumber(skill.getRank()));
         rankLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
         this.skillsPanel.add(rankLabel, gbc);
@@ -227,7 +236,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addLevelCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 2;
-        gbc.weightx = 0.2;
+        gbc.weightx = 0.15;
         JLabel levelLabel = new JLabel(skill.formattedLevelString());
         levelLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
         this.skillsPanel.add(levelLabel, gbc);
@@ -235,10 +244,66 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addExperienceCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 3;
-        gbc.weightx = 0.4;
+        gbc.weightx = 0.15;
         JLabel expLabel = new JLabel(formatNumber(skill.getExperience()));
         expLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
         this.skillsPanel.add(expLabel, gbc);
+    }
+
+    private void addGoalCell(Skill skill, GridBagConstraints gbc) {
+        gbc.gridx = 4;
+        gbc.weightx = 0.15;
+
+        String goalText;
+        if (skill.isOverall()) {
+            goalText = "N/A";
+        } else {
+            Goal goal = this.currentPlayer.getGoal(skill.getName());
+            goalText = goal.toString();
+        }
+
+        JLabel goalLabel = new JLabel(goalText);
+        goalLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+        this.skillsPanel.add(goalLabel, gbc);
+    }
+
+    private void addProgressCell(Skill skill, GridBagConstraints gbc) {
+        gbc.gridx = 5;
+        gbc.weightx = 0.25;
+
+        if (skill.isOverall()) {
+            JLabel naLabel = new JLabel("N/A");
+            naLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+            this.skillsPanel.add(naLabel, gbc);
+        } else {
+            int progress = this.currentPlayer.getProgressToGoal(skill.getName());
+            JProgressBar progressBar = createProgressBar(progress);
+            this.skillsPanel.add(progressBar, gbc);
+        }
+    }
+
+    private JProgressBar createProgressBar(int progress) {
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(progress);
+        progressBar.setStringPainted(true);
+        progressBar.setString(progress + "%");
+        progressBar.setForeground(getProgressBarColor(progress));
+        progressBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+        return progressBar;
+    }
+
+    private Color getProgressBarColor(int progress) {
+        if (progress < 25) {
+            return Color.RED;
+        } else if (progress < 50) {
+            return Color.ORANGE;
+        } else if (progress < 75) {
+            return Color.YELLOW;
+        } else if (progress < 100) {
+            return Color.GREEN;
+        } else {
+            return Color.GREEN.darker();
+        }
     }
 
     private void addHeaderLabel(String text, GridBagConstraints gbc) {
@@ -248,12 +313,10 @@ public class ExperienceTrackerGUI extends JFrame {
         this.skillsPanel.add(label, gbc);
     }
 
-    // Helper method to format numbers with commas
     private String formatNumber(int number) {
         return String.format("%,d", number);
     }
 
-    // Updates player info label with information w/ username and timestamp
     private void updatePlayerInfo() {
         String username = this.currentPlayer.getUsername();
         String timestamp = this.currentPlayer.getLastRefreshedAt().toString();

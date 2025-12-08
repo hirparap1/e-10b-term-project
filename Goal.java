@@ -1,5 +1,8 @@
-abstract class Goal {
+public abstract class Goal {
     abstract public int getTargetExperience();
+
+    @Override
+    abstract public String toString();
 }
 
 class ExperienceGoal extends Goal {
@@ -20,6 +23,11 @@ class ExperienceGoal extends Goal {
     @Override
     public int getTargetExperience() {
         return this.targetExperience;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%,d XP", this.targetExperience);
     }
 }
 
@@ -45,5 +53,10 @@ class LevelGoal extends Goal {
             sum += Math.floor(l + 300.0 * Math.pow(2.0, l / 7.0));
         }
         return (int) Math.floor(sum / 4);
+    }
+
+    @Override
+    public String toString() {
+        return "Level " + this.targetLevel;
     }
 }
