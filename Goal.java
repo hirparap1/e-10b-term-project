@@ -13,7 +13,7 @@ class ExperienceGoal extends Goal {
     }
 
     public ExperienceGoal(int targetExperience) throws InvalidGoalException {
-        if (targetExperience < 0 || targetExperience > 200_000_000) {
+        if (targetExperience < 1 || targetExperience > 200_000_000) {
             throw new InvalidGoalException();
         }
 
@@ -39,7 +39,7 @@ class LevelGoal extends Goal {
     }
 
     public LevelGoal(int targetLevel) throws InvalidGoalException {
-        if (targetLevel < 1 || targetLevel > 126) {
+        if (targetLevel < 2 || targetLevel > 126) {
             throw new InvalidGoalException();
         }
 
