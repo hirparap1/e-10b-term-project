@@ -162,7 +162,6 @@ public class ExperienceTrackerGUI extends JFrame {
         this.skillsPanel.removeAll();
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(1, 1, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
 
         addSkillHeaders(gbc);
@@ -277,7 +276,7 @@ public class ExperienceTrackerGUI extends JFrame {
         gbc.weightx = 0.1;
 
         if (skill.isOverall()) {
-            JLabel emptyLabel = new JLabel("");
+            JLabel emptyLabel = new JLabel();
             emptyLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
             this.skillsPanel.add(emptyLabel, gbc);
         } else {
@@ -380,7 +379,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
         gbc.gridy = 2;
         gbc.gridwidth = 1;
-        mainPanel.add(new JLabel("Target:"), gbc);
+        mainPanel.add(new JLabel("Target: "), gbc);
 
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
