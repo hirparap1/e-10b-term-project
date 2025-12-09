@@ -1,12 +1,16 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.*;
 
 public class ExperienceTrackerGUI extends JFrame {
     private JTextField usernameField;
-    private JButton loadButton;
+    private JButton loadAPIButton;
     private JButton refreshButton;
+    private JButton savePlayerButton;
+    private JButton loadFileButton;
     private JLabel playerInfoLabel;
     private JPanel skillsPanel;
     private Player currentPlayer;
@@ -29,8 +33,11 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void initializeInputComponents() {
         this.usernameField = new JTextField(15);
-        this.loadButton = new JButton("Load Player");
+        this.loadAPIButton = new JButton("Load Player from API");
+        this.loadFileButton = new JButton("Load Player from File");
         this.refreshButton = new JButton("Refresh Skills");
+        this.savePlayerButton = new JButton("Save Player");
+        this.savePlayerButton.setEnabled(false);
         this.refreshButton.setEnabled(false);
     }
 
@@ -45,10 +52,17 @@ public class ExperienceTrackerGUI extends JFrame {
     }
 
     private void addActionListeners() {
-        this.loadButton.addActionListener(new ActionListener() {
+        this.loadAPIButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadPlayer();
+            }
+        });
+
+        this.loadFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadPlayerFromFile();
             }
         });
 
@@ -56,6 +70,13 @@ public class ExperienceTrackerGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 refreshPlayer();
+            }
+        });
+
+        this.savePlayerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                savePlayer();
             }
         });
 
@@ -84,8 +105,10 @@ public class ExperienceTrackerGUI extends JFrame {
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         topPanel.add(new JLabel("Username:"));
         topPanel.add(this.usernameField);
-        topPanel.add(this.loadButton);
+        topPanel.add(this.loadAPIButton);
+        topPanel.add(this.loadFileButton);
         topPanel.add(this.refreshButton);
+        topPanel.add(this.savePlayerButton);
         return topPanel;
     }
 
@@ -120,14 +143,11 @@ public class ExperienceTrackerGUI extends JFrame {
             return;
         }
 
-        this.skillsPanel.removeAll();
-        this.skillsPanel.revalidate();
-        this.skillsPanel.repaint();
-
         try {
             this.currentPlayer = new Player(username);
-            displayCurrentPlayer();
             this.refreshButton.setEnabled(true);
+            this.savePlayerButton.setEnabled(true);
+            displayCurrentPlayer();
         } catch (PlayerNotFoundException e) {
             JOptionPane.showMessageDialog(this,
                     "Player not found: " + username,
@@ -138,6 +158,27 @@ public class ExperienceTrackerGUI extends JFrame {
                     "Error loading player: " + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadPlayerFromFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Load Player");
+
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                this.currentPlayer = Player.loadFromFile(
+                        fileChooser.getSelectedFile().getAbsolutePath());
+                this.refreshButton.setEnabled(true);
+                this.savePlayerButton.setEnabled(true);
+                displayCurrentPlayer();
+            } catch (IOException | ClassNotFoundException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error loading player: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -154,6 +195,36 @@ public class ExperienceTrackerGUI extends JFrame {
                     "Error refreshing player: " + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void savePlayer() {
+        if (this.currentPlayer == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No player loaded to save",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Player");
+        fileChooser.setSelectedFile(new File(this.currentPlayer.getUsername() + ".osrs"));
+
+        int result = fileChooser.showSaveDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                this.currentPlayer.saveToFile(fileChooser.getSelectedFile().getAbsolutePath());
+                JOptionPane.showMessageDialog(this,
+                        "Player saved successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error saving player: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -419,7 +490,7 @@ public class ExperienceTrackerGUI extends JFrame {
     private void updatePlayerInfo() {
         String username = this.currentPlayer.getUsername();
         String timestamp = this.currentPlayer.getLastRefreshedAt().toString();
-        this.playerInfoLabel.setText("Player: " + username + " | " + timestamp);
+        this.playerInfoLabel.setText("Player: " + username + " | Last Refreshed: " + timestamp);
     }
 
     private void showUpdateGoalDialog(Skill skill) {
