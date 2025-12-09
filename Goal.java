@@ -1,9 +1,14 @@
+import java.io.Serializable;
+
 /**
  * A Goal is a target to achieve. It is either a:
  * - ExperienceGoal: A target experience value
  * - LevelGoal: A target level
  */
-public abstract class Goal {
+public abstract class Goal implements Serializable {
+    // Version for Serialization
+    private static final long serialVersionUID = 1L;
+
     // Abstract method that returns the required experience to satisfy a Goal
     abstract public int getTargetExperience();
 

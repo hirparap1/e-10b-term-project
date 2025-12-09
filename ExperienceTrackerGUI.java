@@ -14,7 +14,7 @@ public class ExperienceTrackerGUI extends JFrame {
     public ExperienceTrackerGUI() {
         setTitle("OSRS Experience Tracker");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1200, 800);
+        setSize(1400, 800);
 
         initializeComponents();
         layoutComponents();
@@ -175,15 +175,15 @@ public class ExperienceTrackerGUI extends JFrame {
         gbc.gridy = 0;
 
         gbc.gridx = 0;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.1;
         addHeaderLabel("Skill", gbc);
 
         gbc.gridx = 1;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.1;
         addHeaderLabel("Rank", gbc);
 
         gbc.gridx = 2;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.08;
         addHeaderLabel("Level", gbc);
 
         gbc.gridx = 3;
@@ -191,16 +191,28 @@ public class ExperienceTrackerGUI extends JFrame {
         addHeaderLabel("Experience", gbc);
 
         gbc.gridx = 4;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.1;
         addHeaderLabel("Goal", gbc);
 
         gbc.gridx = 5;
-        gbc.weightx = 0.1;
+        gbc.weightx = 0.08;
         addHeaderLabel("", gbc);
 
         gbc.gridx = 6;
-        gbc.weightx = 0.3;
+        gbc.weightx = 0.12;
         addHeaderLabel("Progress", gbc);
+
+        gbc.gridx = 7;
+        gbc.weightx = 0.1;
+        addHeaderLabel("Exp/Hour", gbc);
+
+        gbc.gridx = 8;
+        gbc.weightx = 0.08;
+        addHeaderLabel("", gbc);
+
+        gbc.gridx = 9;
+        gbc.weightx = 0.12;
+        addHeaderLabel("Hours to Goal", gbc);
     }
 
     private void addSkillRows(ArrayList<Skill> skills, GridBagConstraints gbc) {
@@ -218,12 +230,15 @@ public class ExperienceTrackerGUI extends JFrame {
             addGoalCell(skill, gbc);
             addUpdateGoalButtonCell(skill, gbc);
             addProgressCell(skill, gbc);
+            addExpRateCell(skill, gbc);
+            addUpdateExpRateButtonCell(skill, gbc);
+            addTimeToGoalCell(skill, gbc);
         }
     }
 
     private void addSkillNameCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 0;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.1;
         JLabel nameLabel = new JLabel(skill.getName().toString());
         nameLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
         nameLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
@@ -232,7 +247,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addRankCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 1;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.1;
         JLabel rankLabel = new JLabel(formatNumber(skill.getRank()));
         rankLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
         this.skillsPanel.add(rankLabel, gbc);
@@ -240,7 +255,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addLevelCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 2;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.08;
         JLabel levelLabel = new JLabel(skill.formattedLevelString());
         levelLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
         this.skillsPanel.add(levelLabel, gbc);
@@ -256,7 +271,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addGoalCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 4;
-        gbc.weightx = 0.12;
+        gbc.weightx = 0.1;
 
         String goalText;
         if (skill.isOverall()) {
@@ -273,14 +288,14 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addUpdateGoalButtonCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 5;
-        gbc.weightx = 0.1;
+        gbc.weightx = 0.08;
 
         if (skill.isOverall()) {
             JLabel emptyLabel = new JLabel();
             emptyLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
             this.skillsPanel.add(emptyLabel, gbc);
         } else {
-            JButton updateGoalButton = new JButton("Update Goal");
+            JButton updateGoalButton = new JButton("Update");
             updateGoalButton.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
             updateGoalButton.addActionListener(new ActionListener() {
                 @Override
@@ -294,7 +309,7 @@ public class ExperienceTrackerGUI extends JFrame {
 
     private void addProgressCell(Skill skill, GridBagConstraints gbc) {
         gbc.gridx = 6;
-        gbc.weightx = 0.3;
+        gbc.weightx = 0.12;
 
         if (skill.isOverall()) {
             JLabel naLabel = new JLabel("");
@@ -305,6 +320,65 @@ public class ExperienceTrackerGUI extends JFrame {
             JProgressBar progressBar = createProgressBar(progress);
             this.skillsPanel.add(progressBar, gbc);
         }
+    }
+
+    private void addExpRateCell(Skill skill, GridBagConstraints gbc) {
+        gbc.gridx = 7;
+        gbc.weightx = 0.1;
+
+        String expRateText;
+        if (skill.isOverall()) {
+            expRateText = "";
+        } else {
+            Integer expRate = this.currentPlayer.getExperienceRate(skill.getName());
+            expRateText = (expRate == null) ? "N/A" : formatNumber(expRate);
+        }
+
+        JLabel expRateLabel = new JLabel(expRateText);
+        expRateLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+        this.skillsPanel.add(expRateLabel, gbc);
+    }
+
+    private void addUpdateExpRateButtonCell(Skill skill, GridBagConstraints gbc) {
+        gbc.gridx = 8;
+        gbc.weightx = 0.08;
+
+        if (skill.isOverall()) {
+            JLabel emptyLabel = new JLabel();
+            emptyLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+            this.skillsPanel.add(emptyLabel, gbc);
+        } else {
+            JButton updateExpRateButton = new JButton("Update");
+            updateExpRateButton.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+            updateExpRateButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showUpdateExpRateDialog(skill);
+                }
+            });
+            this.skillsPanel.add(updateExpRateButton, gbc);
+        }
+    }
+
+    private void addTimeToGoalCell(Skill skill, GridBagConstraints gbc) {
+        gbc.gridx = 9;
+        gbc.weightx = 0.12;
+
+        String timeText;
+        if (skill.isOverall()) {
+            timeText = "";
+        } else {
+            double timeToGoal = this.currentPlayer.getTimeToGoal(skill.getName());
+            if (timeToGoal < 0) {
+                timeText = "N/A";
+            } else {
+                timeText = String.format("%.2f hours", timeToGoal);
+            }
+        }
+
+        JLabel timeLabel = new JLabel(timeText);
+        timeLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
+        this.skillsPanel.add(timeLabel, gbc);
     }
 
     private JProgressBar createProgressBar(int progress) {
@@ -386,7 +460,6 @@ public class ExperienceTrackerGUI extends JFrame {
         JTextField targetField = new JTextField(10);
         mainPanel.add(targetField, gbc);
 
-        // Add hint text
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
@@ -419,6 +492,83 @@ public class ExperienceTrackerGUI extends JFrame {
                     JOptionPane.showMessageDialog(dialog,
                             "Invalid target for your goal!",
                             "Invalid Goal",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+
+        dialog.add(mainPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        return dialog;
+    }
+
+    private void showUpdateExpRateDialog(Skill skill) {
+        JDialog dialog = createUpdateExpRateDialog(skill);
+        dialog.setVisible(true);
+    }
+
+    private JDialog createUpdateExpRateDialog(Skill skill) {
+        JDialog dialog = new JDialog(this, "Set Experience Rate for " + skill.getName(), true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(400, 180);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        mainPanel.add(new JLabel("Experience Rate (exp/hour): "), gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JTextField expRateField = new JTextField(10);
+        mainPanel.add(expRateField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        JLabel hintLabel = new JLabel("Rate: 1-200,000,000 exp/hour");
+        hintLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        hintLabel.setForeground(Color.GRAY);
+        mainPanel.add(hintLabel, gbc);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int rate = Integer.parseInt(expRateField.getText().trim());
+
+                    currentPlayer.updateExperienceRate(skill.getName(), rate);
+                    dialog.dispose();
+                    displayCurrentPlayer();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Please enter a valid number",
+                            "Invalid Experience Rate",
+                            JOptionPane.ERROR_MESSAGE);
+                } catch (InvalidExperienceRateException ex) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Invalid experience rate!",
+                            "Invalid Experience Rate",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }

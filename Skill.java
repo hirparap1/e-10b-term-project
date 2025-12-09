@@ -1,9 +1,14 @@
+import java.io.Serializable;
+
 /**
  * Skill represents one of the skills in the game OSRS (as well as the sum skill
  * Overall). It has an amount of experience which correlates to a level, as well
  * as a ranking on the leaderboards of the game.
  */
-public class Skill {
+public class Skill implements Serializable {
+    // Version for Serialization
+    private static final long serialVersionUID = 1L;
+
     // The name of the skill
     private final SkillName name;
     // The current level of the skill

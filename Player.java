@@ -7,8 +7,14 @@ import java.util.*;
  * Represents a Player of the game OldSchoolRuneScape. A Player has a username,
  * and a set of skills they are progressing in. They can also have Goals and
  * experience rates for each of these skills.
+ * 
+ * The Player class and all it's underlying instance variables support
+ * serialization into a file representation.
+ * 
  */
-public class Player {
+public class Player implements Serializable {
+    // Version for Serialization
+    private static final long serialVersionUID = 1L;
     // Static URL for API to fetch skills data
     private static final String HISCORE_URL = "https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=%s";
 
@@ -57,6 +63,37 @@ public class Player {
             }
         } catch (InvalidGoalException e) {
             // This should never happen since we are using the 0-arg constructor
+        }
+    }
+
+    /**
+     * Writes the Player to a file that can be stored and used in the future
+     * 
+     * @param filepath the file path to save the Player to
+     * @throws IOException
+     */
+    public void saveToFile(String filepath) throws IOException {
+        // My IDE was compaining I wasn't using try-with-resource syntax
+        // So I used the auto-fix feature here
+        try (ObjectOutputStream out = new ObjectOutputStream(
+                new FileOutputStream(filepath))) {
+            out.writeObject(this);
+        }
+    }
+
+    /**
+     * Reads and creates a Player from a file that can be stored and used in the
+     * future
+     * 
+     * @param filepath the file path to load the Player to
+     * @throws IOException
+     */
+    public static Player loadFromFile(String filepath) throws IOException, ClassNotFoundException {
+        // My IDE was compaining I wasn't using try-with-resource syntax
+        // So I used the auto-fix feature here
+        try (ObjectInputStream in = new ObjectInputStream(
+                new FileInputStream(filepath))) {
+            return (Player) in.readObject();
         }
     }
 
