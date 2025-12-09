@@ -654,7 +654,7 @@ public class ExperienceTrackerGUI extends JFrame {
         else {
             double timeToGoal = this.currentPlayer.getTimeToGoal(skill.getName());
             if (timeToGoal < 0) {
-                timeText = "ACHIEVED!";
+                timeText = "N/A";
             } else {
                 timeText = String.format("%.2f hours", timeToGoal);
             }
